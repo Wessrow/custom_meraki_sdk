@@ -17,7 +17,7 @@ class MerakiSDK:
         """ Initial constructor for the class """
 
         self.base_url = "https://api.meraki.com/api/v1"
-        self.headers = { 
+        self.headers = {
                         "Accept": "application/json",
                         "Content-Type": "application/json",
                         "X-Cisco-Meraki-API-Key": token
@@ -92,7 +92,7 @@ class MerakiSDK:
 
         return response
 
-    def create_network(self, org_id, name, tags=[]):
+    def create_network(self, org_id, name, tags):
         """ Creates new network in org from given parameters """
 
         body = {
@@ -106,6 +106,25 @@ class MerakiSDK:
 
         response = self._req(f"/organizations/{org_id}/networks", body, "POST")
 
+        self._format_logs(20, "NetworkCreated", f"Network {name} created")
+        return response
+
+    def add_org_admin(self, org_id, email, tags, name=None):
+        """ Adds admin to org from given parameters """
+
+        if name is None:
+            name = email.split("@")[0]
+
+        body = {
+                    "name": name,
+                    "email": email,
+                    "orgAccess": "none",
+                    "tags": tags
+                }
+
+        response = self._req(f"/organizations/{org_id}/admins", body, "POST")
+
+        self._format_logs(20, "UserCreated", f"User {name} - {email} created")
         return response
 
 if __name__ == "__main__":
