@@ -13,7 +13,7 @@ class MerakiSDK:
     """
     def __init__(self, token, verify=False):
         """ Initial constructor for the class """
-        
+
         self.base_url = "https://api.meraki.com/api/v1"
         self.headers = { "X-Cisco-Meraki-API-Key": token }
         self.verify = verify
@@ -31,7 +31,7 @@ class MerakiSDK:
                                     headers=self.headers,
                                     verify=self.verify)
 
-        if response.status_code in [400, 401, 403, 404]:
+        if response.status_code in [400, 401, 403, 404, 429]:
 
             return f"Error with request: {response.status_code}"
 
@@ -42,6 +42,18 @@ class MerakiSDK:
         response = self._req("/organizations")
 
         return response
+
+    def get_org_by_name(self, name):
+        """ Returns org-id from given org name """
+
+        organizations = self.get_orgs().json()
+        org_id = None
+
+        for organization in organizations:
+            if organization["name"] == name:
+                org_id = organization["id"]
+
+        return org_id
 
     def get_org_networks(self, org_id):
         """ Return available networks in an org """
