@@ -5,6 +5,7 @@ Written by Gustav Larsson
 """
 
 import sys
+import json
 import requests
 from logging_handler import logger
 
@@ -16,7 +17,11 @@ class MerakiSDK:
         """ Initial constructor for the class """
 
         self.base_url = "https://api.meraki.com/api/v1"
-        self.headers = { "X-Cisco-Meraki-API-Key": token }
+        self.headers = { 
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                        "X-Cisco-Meraki-API-Key": token
+                    }
         self.verify = verify
 
         if verify is False:
@@ -41,13 +46,13 @@ class MerakiSDK:
         url = f"{self.base_url}{resource}"
         response = requests.request(url=url,
                                     method=method,
-                                    data=payload,
+                                    data=json.dumps(payload),
                                     headers=self.headers,
                                     verify=self.verify)
 
         if response.status_code in [400, 401, 403, 404, 429]:
 
-            self._format_logs(40, "Fail", f"Error with request: {response.status_code}")
+            self._format_logs(40, "Fail", f"{response.status_code} - {response.text}")
             sys.exit(1)
 
         self._format_logs(10, "Success", response.status_code)
@@ -73,7 +78,6 @@ class MerakiSDK:
         if org_id is None:
             self._format_logs(40, "Fail", "Orgainzation not found")
 
-        print(org_id)
         return org_id
 
     def get_org_networks(self, org_id):
@@ -88,20 +92,21 @@ class MerakiSDK:
 
         return response
 
-    def create_network(self):
+    def create_network(self, org_id, name, tags=[]):
         """ Creates new network in org from given parameters """
 
-        # body = {
-        #             "name": "Long Island Office",
-        #             "timeZone": "America/Los_Angeles",
-        #             "tags": [ "tag1", "tag2" ],
-        #             "notes": "Combined network for Long Island Office",
-        #             "productTypes": [
-        #                 "appliance",
-        #                 "switch",
-        #                 "camera"
-        #             ]
-        #         }
+        body = {
+                    "name": name,
+                    "timeZone": "Europe/Stockholm",
+                    "tags": tags,
+                    "productTypes": [
+                        "appliance"
+                    ]
+                }
+
+        response = self._req(f"/organizations/{org_id}/networks", body, "POST")
+
+        return response
 
 if __name__ == "__main__":
 
