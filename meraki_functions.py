@@ -4,8 +4,9 @@ MerakiSDK
 Written by Gustav Larsson
 """
 
-import os
+import sys
 import requests
+from logging_handler import logger
 
 class MerakiSDK:
     """
@@ -19,7 +20,20 @@ class MerakiSDK:
         self.verify = verify
 
         if verify is False:
+            self._format_logs(20, "Verify SSL", "False")
             requests.urllib3.disable_warnings()
+
+    @staticmethod
+    def _format_logs(level, message_type, message):
+        """
+        Helper function to format error messages
+        """
+
+        info = {"type": message_type,
+                    "message": message
+        }
+
+        logger.log(level, info)
 
     def _req(self, resource, payload=None, method="GET"):
         """ Temp main-function """
@@ -33,12 +47,15 @@ class MerakiSDK:
 
         if response.status_code in [400, 401, 403, 404, 429]:
 
-            return f"Error with request: {response.status_code}"
+            self._format_logs(40, "Fail", f"Error with request: {response.status_code}")
+            sys.exit(1)
 
+        self._format_logs(10, "Success", response.status_code)
         return response
 
     def get_orgs(self):
         """ Return available orgs """
+
         response = self._req("/organizations")
 
         return response
@@ -53,6 +70,10 @@ class MerakiSDK:
             if organization["name"] == name:
                 org_id = organization["id"]
 
+        if org_id is None:
+            self._format_logs(40, "Fail", "Orgainzation not found")
+
+        print(org_id)
         return org_id
 
     def get_org_networks(self, org_id):
@@ -67,6 +88,21 @@ class MerakiSDK:
 
         return response
 
+    def create_network(self):
+        """ Creates new network in org from given parameters """
+
+        # body = {
+        #             "name": "Long Island Office",
+        #             "timeZone": "America/Los_Angeles",
+        #             "tags": [ "tag1", "tag2" ],
+        #             "notes": "Combined network for Long Island Office",
+        #             "productTypes": [
+        #                 "appliance",
+        #                 "switch",
+        #                 "camera"
+        #             ]
+        #         }
+
 if __name__ == "__main__":
 
-    test = MerakiSDK(token=os.environ["MERAKI_API_TOKEN"])
+    pass
