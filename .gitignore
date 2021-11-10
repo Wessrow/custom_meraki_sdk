@@ -37,6 +37,7 @@ dev
 
 # Custom
 main.py
+add_customer.xlsx
 
 # Installer logs
 pip-log.txt
