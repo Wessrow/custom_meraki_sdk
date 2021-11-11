@@ -4,7 +4,6 @@ MerakiSDK
 Written by Gustav Larsson
 """
 
-import sys
 import json
 import requests
 from logging_handler import logger
@@ -53,7 +52,7 @@ class MerakiSDK:
         if response.status_code in [400, 401, 403, 404, 429]:
 
             self._format_logs(40, "Fail", f"{response.status_code} - {response.text}")
-            sys.exit(1)
+            return response
 
         self._format_logs(10, "Success", response.status_code)
         return response
@@ -106,7 +105,8 @@ class MerakiSDK:
 
         response = self._req(f"/organizations/{org_id}/networks", body, "POST")
 
-        self._format_logs(20, "NetworkCreated", f"Network {name} created")
+        if response.status_code in [200,201]:
+            self._format_logs(20, "NetworkCreated", f"Network {name} created")
         return response
 
     def add_org_admin(self, org_id, email, tags, name=None):
@@ -124,12 +124,13 @@ class MerakiSDK:
 
         response = self._req(f"/organizations/{org_id}/admins", body, "POST")
 
-        self._format_logs(20, "UserCreated", f"User {name} - {email} created")
+        if response.status_code in [200,201]:
+            self._format_logs(20, "UserCreated", f"User {name} - {email} created")
         return response
 
     def add_webhook(self, network_id, name, url, secret):
+        """ Adds webhook to network from standard parameters """
 
-        
         body = {
                     "name": name,
                     "url": url,
@@ -138,7 +139,8 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/webhooks/httpServers", body, "POST")
 
-        self._format_logs(20, "WebhookCreated", f"Name {name} - {url} created")
+        if response.status_code in [200,201]:
+            self._format_logs(20, "WebhookCreated", f"Name {name} - {url} created")
         return response
 
     def add_alerts(self, network_id, body):
@@ -146,7 +148,8 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/alerts/settings", body, "PUT")
 
-        self._format_logs(20, "AlertsCreated", f"Alerts added to {network_id} created")
+        if response.status_code in [200,201]:
+            self._format_logs(20, "AlertsCreated", f"Alerts added to {network_id} created")
         return response
 
 if __name__ == "__main__":
