@@ -127,6 +127,28 @@ class MerakiSDK:
         self._format_logs(20, "UserCreated", f"User {name} - {email} created")
         return response
 
+    def add_webhook(self, network_id, name, url, secret):
+
+        
+        body = {
+                    "name": name,
+                    "url": url,
+                    "sharedSecret": secret
+                }
+
+        response = self._req(f"/networks/{network_id}/webhooks/httpServers", body, "POST")
+
+        self._format_logs(20, "WebhookCreated", f"Name {name} - {url} created")
+        return response
+
+    def add_alerts(self, network_id, body):
+        """ Adds alerts to a network from passed in body """
+
+        response = self._req(f"/networks/{network_id}/alerts/settings", body, "PUT")
+
+        self._format_logs(20, "AlertsCreated", f"Alerts added to {network_id} created")
+        return response
+
 if __name__ == "__main__":
 
     pass
