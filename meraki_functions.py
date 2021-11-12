@@ -6,7 +6,9 @@ Written by Gustav Larsson
 
 import json
 import requests
-from logging_handler import logger
+from logging_handler import LogHandler
+
+logging = LogHandler(__name__)
 
 class MerakiSDK:
     """
@@ -24,20 +26,8 @@ class MerakiSDK:
         self.verify = verify
 
         if verify is False:
-            self._format_logs(20, "Verify SSL", "False")
+            logging.format_logs(20, "Verify SSL", "False")
             requests.urllib3.disable_warnings()
-
-    @staticmethod
-    def _format_logs(level, message_type, message):
-        """
-        Helper function to format error messages
-        """
-
-        info = {"type": message_type,
-                    "message": message
-        }
-
-        logger.log(level, info)
 
     def _req(self, resource, payload=None, method="GET"):
         """ Temp main-function """
@@ -51,10 +41,10 @@ class MerakiSDK:
 
         if response.status_code in [400, 401, 403, 404, 429]:
 
-            self._format_logs(40, "Fail", f"{response.status_code} - {response.text}")
+            logging.format_logs(40, "Fail", f"{response.status_code} - {response.text}")
             return response
 
-        self._format_logs(10, "Success", response.status_code)
+        logging.format_logs(10, "Success", response.status_code)
         return response
 
     def get_orgs(self):
@@ -75,7 +65,7 @@ class MerakiSDK:
                 org_id = organization["id"]
 
         if org_id is None:
-            self._format_logs(40, "Fail", "Orgainzation not found")
+            logging.format_logs(40, "Fail", "Orgainzation not found")
 
         return org_id
 
@@ -106,7 +96,7 @@ class MerakiSDK:
         response = self._req(f"/organizations/{org_id}/networks", body, "POST")
 
         if response.status_code in [200,201]:
-            self._format_logs(20, "NetworkCreated", f"Network {name} created")
+            logging.format_logs(20, "NetworkCreated", f"Network {name} created")
         return response
 
     def add_org_admin(self, org_id, email, tags, name=None):
@@ -125,7 +115,7 @@ class MerakiSDK:
         response = self._req(f"/organizations/{org_id}/admins", body, "POST")
 
         if response.status_code in [200,201]:
-            self._format_logs(20, "UserCreated", f"User {name} - {email} created")
+            logging.format_logs(20, "UserCreated", f"User {name} - {email} created")
         return response
 
     def add_webhook(self, network_id, name, url, secret):
@@ -140,7 +130,7 @@ class MerakiSDK:
         response = self._req(f"/networks/{network_id}/webhooks/httpServers", body, "POST")
 
         if response.status_code in [200,201]:
-            self._format_logs(20, "WebhookCreated", f"Name {name} - {url} created")
+            logging.format_logs(20, "WebhookCreated", f"Name {name} - {url} created")
         return response
 
     def add_alerts(self, network_id, body):
@@ -149,7 +139,7 @@ class MerakiSDK:
         response = self._req(f"/networks/{network_id}/alerts/settings", body, "PUT")
 
         if response.status_code in [200,201]:
-            self._format_logs(20, "AlertsCreated", f"Alerts added to {network_id} created")
+            logging.format_logs(20, "AlertsCreated", f"Alerts added to {network_id}")
         return response
 
 if __name__ == "__main__":
