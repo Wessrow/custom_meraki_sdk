@@ -5,6 +5,7 @@ Code written by Gustav Larsson
 Logging setup and handler
 """
 
+import os
 import sys
 import logging
 
@@ -16,8 +17,14 @@ class LogHandler:
     def __init__(self, instance):
         """ Sets upp logger """
 
+        try:
+            LOGLEVEL = os.environ["LOGLEVEL"]
+            
+        except KeyError:
+            LOGLEVEL = "INFO"
+
         logging.basicConfig(stream=sys.stdout,
-                        level=logging.INFO,
+                        level=LOGLEVEL,
                         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
                         )
 
