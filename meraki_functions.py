@@ -1,14 +1,16 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 """
 MerakiSDK
 Written by Gustav Larsson
 """
 
+import sys
 import json
 import requests
 from logging_handler import LogHandler
 
-logging = LogHandler(__name__)
+logging = LogHandler("MerakiSDK")
+# pylint: disable=line-too-long
 
 class MerakiSDK:
     """
@@ -26,7 +28,7 @@ class MerakiSDK:
         self.verify = verify
 
         if verify is False:
-            logging.format_logs(20, "Verify SSL", "False")
+            logging.format_logs(20, "VerifySSL", "False")
             requests.urllib3.disable_warnings()
 
     def _req(self, resource, payload=None, method="GET"):
@@ -39,13 +41,25 @@ class MerakiSDK:
                                     headers=self.headers,
                                     verify=self.verify)
 
-        if response.status_code in [400, 401, 403, 404, 429]:
+        if response.status_code in [401, 403, 429]:
 
-            logging.format_logs(40, "Fail", f"{response.status_code} - {response.text}")
+            logging.format_logs(40, "FatalError", f"{response.status_code} - {response.text}")
+            sys.exit(1)
+
+        elif response.status_code in [400, 404]:
+
+            logging.format_logs(40, "RequestError", f"{response.status_code} - {response.text}")
             return response
 
         logging.format_logs(10, "Success", response.status_code)
         return response
+
+    @staticmethod
+    def _handle_respone(response, log_type, log_message):
+        """ Internal function to handle response status_codes and logs """
+
+        if response.status_code in [200,201]:
+            logging.format_logs(20, log_type, log_message)
 
     def get_orgs(self):
         """ Return available orgs """
@@ -95,8 +109,7 @@ class MerakiSDK:
 
         response = self._req(f"/organizations/{org_id}/networks", body, "POST")
 
-        if response.status_code in [200,201]:
-            logging.format_logs(20, "NetworkCreated", f"Network {name} created")
+        self._handle_respone(response, "NetworkCreated", f"Network {name} created")
         return response
 
     def add_org_admin(self, org_id, email, tags, name=None):
@@ -114,8 +127,7 @@ class MerakiSDK:
 
         response = self._req(f"/organizations/{org_id}/admins", body, "POST")
 
-        if response.status_code in [200,201]:
-            logging.format_logs(20, "UserCreated", f"User {name} - {email} created")
+        self._handle_respone(response, "UserCreated", f"User {name} - {email} created")
         return response
 
     def add_webhook(self, network_id, name, url, secret):
@@ -129,17 +141,57 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/webhooks/httpServers", body, "POST")
 
-        if response.status_code in [200,201]:
-            logging.format_logs(20, "WebhookCreated", f"Name {name} - {url} created")
+        self._handle_respone(response, "WebhookCreated", f"Name {name} - {url} created")
         return response
 
-    def add_alerts(self, network_id, body):
-        """ Adds alerts to a network from passed in body """
+    def update_alerts(self, network_id, body):
+        """ Updates alerts to a network from passed in body """
 
         response = self._req(f"/networks/{network_id}/alerts/settings", body, "PUT")
 
-        if response.status_code in [200,201]:
-            logging.format_logs(20, "AlertsCreated", f"Alerts added to {network_id}")
+        self._handle_respone(response, "AlertsCreated", f"Alerts added to {network_id}")
+        return response
+
+    def update_s2s_vpn(self, network_id, body):
+        """ Updates s2s-vpn for a given network using passed along body """
+
+        response = self._req(f"/networks/{network_id}/appliance/vpn/siteToSiteVpn", body, "PUT")
+
+        self._handle_respone(response, "S2sVPNUpdated", f"Site-to-Site VPN for {network_id} updated")
+        return response
+
+    def update_firewall_rules(self, network_id, body):
+        """ Updates the current appliance l3 firewall settings """
+
+        response = self._req(f"/networks/{network_id}/appliance/firewall/l3FirewallRules", body, "PUT")
+
+        self._handle_respone(response, "L3FirewallUpdated", f"L3 Firewall rules for {network_id} updated")
+        return response
+
+    def enable_vlans(self, network_id):
+        """ Enables VLANs for network """
+
+        body = { "vlansEnabled": True }
+
+        response = self._req(f"/networks/{network_id}/appliance/vlans/settings", body, "PUT")
+
+        self._handle_respone(response, "VlansEnabled", f"Vlans enabled on {network_id}")
+        return response
+
+    def add_vlan(self, network_id, body):
+        """ Adds VLAN """
+
+        response = self._req(f"/networks/{network_id}/appliance/vlans", body, "POST")
+
+        self._handle_respone(response, "VlanAdded", f"Vlan id: {body['id']} added to {network_id}")
+        return response
+
+    def update_vlan(self, network_id, vlan_id, body):
+        """ Update VLAN with new body """
+
+        response = self._req(f"/networks/{network_id}/appliance/vlans/{vlan_id}", body, "PUT")
+
+        self._handle_respone(response, "VlanUpdated", f"Vlan id: {body['id']} updated")
         return response
 
 if __name__ == "__main__":

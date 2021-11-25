@@ -9,6 +9,13 @@ import os
 import sys
 import logging
 
+try:
+    LOGLEVEL = os.environ["LOGLEVEL"]
+
+except KeyError:
+    LOGLEVEL = "INFO"
+
+# pylint: disable=too-few-public-methods
 class LogHandler:
     """
     Class to handle logging
@@ -16,12 +23,6 @@ class LogHandler:
 
     def __init__(self, instance):
         """ Sets upp logger """
-
-        try:
-            LOGLEVEL = os.environ["LOGLEVEL"]
-            
-        except KeyError:
-            LOGLEVEL = "INFO"
 
         logging.basicConfig(stream=sys.stdout,
                         level=LOGLEVEL,
