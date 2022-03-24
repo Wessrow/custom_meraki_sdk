@@ -55,7 +55,7 @@ class MerakiSDK:
         return response
 
     @staticmethod
-    def _handle_respone(response, log_type, log_message):
+    def _handle_response(response, log_type, log_message):
         """ Internal function to handle response status_codes and logs """
 
         if response.status_code in [200,201]:
@@ -109,7 +109,7 @@ class MerakiSDK:
 
         response = self._req(f"/organizations/{org_id}/networks", body, "POST")
 
-        self._handle_respone(response, "NetworkCreated", f"Network {name} created")
+        self._handle_response(response, "NetworkCreated", f"Network {name} created")
         return response
 
     def add_org_admin(self, org_id, email, tags, name=None):
@@ -127,7 +127,7 @@ class MerakiSDK:
 
         response = self._req(f"/organizations/{org_id}/admins", body, "POST")
 
-        self._handle_respone(response, "UserCreated", f"User {name} - {email} created")
+        self._handle_response(response, "UserCreated", f"User {name} - {email} created")
         return response
 
     def add_webhook(self, network_id, name, url, secret):
@@ -141,7 +141,7 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/webhooks/httpServers", body, "POST")
 
-        self._handle_respone(response, "WebhookCreated", f"Name {name} - {url} created")
+        self._handle_response(response, "WebhookCreated", f"Name {name} - {url} created")
         return response
 
     def update_alerts(self, network_id, body):
@@ -149,7 +149,7 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/alerts/settings", body, "PUT")
 
-        self._handle_respone(response, "AlertsCreated", f"Alerts added to {network_id}")
+        self._handle_response(response, "AlertsCreated", f"Alerts added to {network_id}")
         return response
 
     def update_s2s_vpn(self, network_id, body):
@@ -157,7 +157,7 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/appliance/vpn/siteToSiteVpn", body, "PUT")
 
-        self._handle_respone(response, "S2sVPNUpdated", f"Site-to-Site VPN for {network_id} updated")
+        self._handle_response(response, "S2sVPNUpdated", f"Site-to-Site VPN for {network_id} updated")
         return response
 
     def update_firewall_rules(self, network_id, body):
@@ -165,7 +165,7 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/appliance/firewall/l3FirewallRules", body, "PUT")
 
-        self._handle_respone(response, "L3FirewallUpdated", f"L3 Firewall rules for {network_id} updated")
+        self._handle_response(response, "L3FirewallUpdated", f"L3 Firewall rules for {network_id} updated")
         return response
 
     def enable_vlans(self, network_id):
@@ -175,7 +175,7 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/appliance/vlans/settings", body, "PUT")
 
-        self._handle_respone(response, "VlansEnabled", f"Vlans enabled on {network_id}")
+        self._handle_response(response, "VlansEnabled", f"Vlans enabled on {network_id}")
         return response
 
     def add_vlan(self, network_id, body):
@@ -183,7 +183,7 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/appliance/vlans", body, "POST")
 
-        self._handle_respone(response, "VlanAdded", f"Vlan id: {body['id']} added to {network_id}")
+        self._handle_response(response, "VlanAdded", f"Vlan id: {body['id']} added to {network_id}")
         return response
 
     def update_vlan(self, network_id, vlan_id, body):
@@ -191,7 +191,7 @@ class MerakiSDK:
 
         response = self._req(f"/networks/{network_id}/appliance/vlans/{vlan_id}", body, "PUT")
 
-        self._handle_respone(response, "VlanUpdated", f"Vlan id: {body['id']} updated")
+        self._handle_response(response, "VlanUpdated", f"Vlan id: {body['id']} updated")
         return response
 
 if __name__ == "__main__":
